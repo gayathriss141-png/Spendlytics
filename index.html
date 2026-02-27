@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Expense Tracker</title>
+    <style>
+      :root {
+        --container-bg: rgba(255, 255, 255, 0.9);
+        --text-color: #333;
+        --border-color: #ddd;
+        --input-bg: white;
+        --input-border: #ddd;
+        --stat-bg: rgba(250, 250, 250, 0.8);
+        --table-header-bg: rgba(245, 245, 245, 0.9);
+        --table-border: #eee;
+        --chart-bar: #4a90e2;
+        --chart-bar-hover: #357abd;
+        --alert-bg: rgba(250, 250, 250, 0.9);
+        --dropdown-bg: white;
+        --dropdown-hover: #f5f5f5;
+        --modal-bg: white;
+        --button-primary: #333;
+        --button-primary-hover: #444;
+        --button-secondary: #666;
+        --button-danger: #dc3545;
+        --button-danger-hover: #c82333;
+        --button-suggestion: #6c5ce7;
+        --button-invoice: #27ae60;
+        --theme-color-light: #ffd700;
+        --theme-color-dark: #f1c40f;
+      }
+
+      [data-theme="dark"] {
+        --container-bg: rgba(45, 45, 45, 0.95);
+        --text-color: #e0e0e0;
+        --border-color: #404040;
+        --input-bg: #3d3d3d;
+        --input-border: #505050;
+        --stat-bg: rgba(54, 54, 54, 0.9);
+        --table-header-bg: rgba(64, 64, 64, 0.9);
+        --table-border: #404040;
+        --chart-bar: #6fa8dc;
+        --chart-bar-hover: #5a8ec9;
+        --alert-bg: rgba(54, 54, 54, 0.9);
+        --dropdown-bg: #3d3d3d;
+        --dropdown-hover: #4a4a4a;
+        --modal-bg: #2d2d2d;
+        --button-primary: #4a4a4a;
+        --button-primary-hover: #5a5a5a;
+        --button-secondary: #666;
+        --button-danger: #c82333;
+        --button-danger-hover: #b21f2d;
+        --button-suggestion: #5a4cbd;
+        --button-invoice: #219a52;
+        --theme-color-light: #ffd700;
+        --theme-color-dark: #f1c40f;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.5;
+        color: var(--text-color);
+        transition: color 0.3s;
+        min-height: 100vh;
+        position: relative;
+        /* Gradient background set by JavaScript */
+        background: linear-gradient(135deg, #a8e6cf, #d4e6f5); /* fallback */
+      }
+
+      /* Floating particles canvas */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: var(--container-bg);
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+        backdrop-filter: blur(2px);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 15px 0;
+        color: var(--text-color);
+        font-weight: 500;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+      h2 {
+        font-size: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+      }
+      h3 {
+        font-size: 16px;
+        margin: 20px 0 10px 0;
+      }
+
+      input,
+      select,
+      button {
+        padding: 8px 12px;
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+        background: var(--input-bg);
+        color: var(--text-color);
+        transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+      }
+
+      button {
+        background: var(--button-primary);
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: var(--button-primary-hover);
+      }
+
+      button.secondary {
+        background: var(--button-secondary);
+      }
+
+      button.logout-btn {
+        background: var(--button-danger);
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      button.logout-btn:hover {
+        background: var(--button-danger-hover);
+      }
+
+      /* Moon theme toggle button - changes emoji based on theme */
+      .theme-toggle {
+        background: none;
+        border: none;
+        font-size: 28px;
+        padding: 0;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--theme-color-light);
+        background: var(--stat-bg);
+        border-radius: 50%;
+        transition: transform 0.2s, color 0.3s;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      }
+
+      [data-theme="dark"] .theme-toggle {
+        color: var(--theme-color-dark);
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+        background: var(--dropdown-hover);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .header h1 {
+        margin: 0;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .input-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: var(--stat-bg);
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .input-group label {
+        font-size: 12px;
+        color: var(--text-color);
+        opacity: 0.8;
+      }
+
+      .expense-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 15px 0;
+        color: var(--text-color);
+      }
+
+      .expense-table th {
+        text-align: left;
+        padding: 8px;
+        background: var(--table-header-bg);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .expense-table td {
+        padding: 8px;
+        border-bottom: 1px solid var(--table-border);
+      }
+
+      .delete-btn {
+        color: var(--text-color);
+        opacity: 0.5;
+        background: none;
+        border: none;
+        padding: 2px 6px;
+        font-size: 12px;
+      }
+
+      .delete-btn:hover {
+        color: var(--button-danger);
+        opacity: 1;
+        background: none;
+      }
+
+      .stats-row {
+        display: flex;
+        gap: 20px;
+        margin: 15px 0;
+        padding: 10px;
+        background: var(--stat-bg);
+        border-radius: 4px;
+        flex-wrap: wrap;
+        transition: background-color 0.3s;
+      }
+
+      .stat {
+        font-size: 14px;
+        color: var(--text-color);
+      }
+
+      .stat .value {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .positive {
+        color: #2a7;
+      }
+      .negative {
+        color: #c00;
+      }
+
+      .chart-container {
+        height: 200px;
+        margin: 20px 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+      }
+
+      .chart-bar {
+        flex: 1;
+        background: var(--chart-bar);
+        min-width: 30px;
+        position: relative;
+        transition: height 0.3s, background-color 0.3s;
+      }
+
+      .chart-bar:hover {
+        background: var(--chart-bar-hover);
+      }
+
+      .chart-label {
+        text-align: center;
+        font-size: 11px;
+        margin-top: 5px;
+        color: var(--text-color);
+        opacity: 0.8;
+      }
+
+      .category-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin: 15px 0;
+        font-size: 14px;
+        color: var(--text-color);
+      }
+
+      .category-item {
+        padding: 5px 0;
+        border-bottom: 1px dotted var(--border-color);
+      }
+
+      .report-section {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .alert {
+        padding: 10px;
+        background: var(--alert-bg);
+        border-left: 3px solid #999;
+        margin: 15px 0;
+        font-size: 14px;
+        transition: background-color 0.3s;
+      }
+
+      .alert.warning {
+        border-left-color: #c00;
+      }
+      .alert.success {
+        border-left-color: #2a7;
+      }
+
+      /* Login Page Styles */
+      .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        background: var(--container-bg);
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(2px);
+      }
+
+      .login-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        border-bottom: none;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .login-form input {
+        width: 100%;
+      }
+
+      .login-form button {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .tab-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .tab-button {
+        flex: 1;
+        background: var(--stat-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        padding: 10px;
+      }
+
+      .tab-button.active {
+        background: var(--button-primary);
+        color: white;
+        border-color: var(--button-primary);
+      }
+
+      .message {
+        color: #dc3545;
+        font-size: 13px;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .message.success {
+        color: #2a7;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .user-info {
+        font-size: 14px;
+        color: var(--text-color);
+        opacity: 0.8;
+        margin-right: 15px;
+      }
+
+      /* Password field with eye icon */
+      .password-field {
+        position: relative;
+        width: 100%;
+      }
+
+      .password-field input {
+        width: 100%;
+        padding-right: 35px;
+      }
+
+      .password-field .eye-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: var(--text-color);
+        opacity: 0.6;
+        font-size: 16px;
+        user-select: none;
+      }
+
+      .password-field .eye-icon:hover {
+        opacity: 1;
+      }
+
+      /* Profile dropdown */
+      .profile-menu {
+        position: relative;
+        display: inline-block;
+      }
+
+      .profile-btn {
+        background: var(--stat-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+        padding: 6px 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 4px;
+      }
+
+      .profile-btn:hover {
+        background: var(--dropdown-hover);
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: var(--dropdown-bg);
+        min-width: 180px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+      }
+
+      .dropdown-content a {
+        color: var(--text-color);
+        padding: 10px 14px;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .dropdown-content a:hover {
+        background-color: var(--dropdown-hover);
+      }
+
+      .profile-menu:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Modal for password change */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: var(--modal-bg);
+        margin: 15% auto;
+        padding: 25px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
+      }
+
+      .modal-content h3 {
+        margin-top: 0;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+      }
+
+      .close {
+        color: var(--text-color);
+        opacity: 0.5;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Floating particles background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+      <h2>Student Expense Tracker</h2>
+
+      <div class="tab-buttons">
+        <button
+          id="loginTab"
+          class="tab-button active"
+          onclick="switchTab('login')"
+        >
+          Login
+        </button>
+        <button
+          id="registerTab"
+          class="tab-button"
+          onclick="switchTab('register')"
+        >
+          Register
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm" class="login-form">
+        <div class="password-field">
+          <input type="text" id="loginUsername" placeholder="Username" />
+        </div>
+        <div class="password-field">
+          <input type="password" id="loginPassword" placeholder="Password" />
+          <span class="eye-icon" onclick="togglePassword('loginPassword')"
+            >👁️</span
+          >
+        </div>
+        <button onclick="login()">Login</button>
+        <div id="loginMessage" class="message"></div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" class="login-form hidden">
+        <div class="password-field">
+          <input type="text" id="regUsername" placeholder="Choose Username" />
+        </div>
+        <div class="password-field">
+          <input
+            type="password"
+            id="regPassword"
+            placeholder="Choose Password"
+          />
+          <span class="eye-icon" onclick="togglePassword('regPassword')"
+            >👁️</span
+          >
+        </div>
+        <div class="password-field">
+          <input
+            type="password"
+            id="regConfirmPassword"
+            placeholder="Confirm Password"
+          />
+          <span class="eye-icon" onclick="togglePassword('regConfirmPassword')"
+            >👁️</span
+          >
+        </div>
+        <button onclick="register()">Register</button>
+        <div id="registerMessage" class="message"></div>
+      </div>
+    </div>
+
+    <!-- Main App Page -->
+    <div id="appPage" class="container hidden">
+      <div class="header">
+        <div
+          style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap"
+        >
+          <h1>📊 Expense Tracker</h1>
+          <span id="currentUser" class="user-info"></span>
+        </div>
+        <div class="header-right">
+          <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">
+            🌙
+          </button>
+          <div class="profile-menu">
+            <button class="profile-btn">👤</button>
+            <div class="dropdown-content">
+              <a onclick="showChangePasswordModal()">🔒 Change Password</a>
+            </div>
+          </div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- Input Section -->
+      <div class="input-row">
+        <div class="input-group">
+          <label>Month</label>
+          <input
+            type="text"
+            id="month"
+            placeholder="Jan 2024"
+            style="width: 100px"
+          />
+        </div>
+        <div class="input-group">
+          <label>Income (₹)</label>
+          <input
+            type="number"
+            id="income"
+            placeholder="0"
+            style="width: 120px"
+          />
+        </div>
+        <div class="input-group">
+          <label>Date</label>
+          <input type="date" id="expenseDate" style="width: 130px" />
+        </div>
+        <div class="input-group">
+          <label>Category</label>
+          <select id="category" style="width: 130px">
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Rent</option>
+            <option>Entertainment</option>
+            <option>Shopping</option>
+            <option>Education</option>
+            <option>Misc</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Amount (₹)</label>
+          <input
+            type="number"
+            id="amount"
+            placeholder="0"
+            style="width: 100px"
+          />
+        </div>
+        <button onclick="addExpense()">Add</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div
+        style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap"
+      >
+        <button onclick="generateReport()">Generate Report</button>
+        <button class="secondary" onclick="resetData()">Reset</button>
+        <button
+          id="suggestionBtn"
+          style="background: var(--button-suggestion); color: white"
+          onclick="showSuggestions()"
+        >
+          💡 Suggestion
+        </button>
+        <button
+          id="invoiceBtn"
+          style="background: var(--button-invoice); color: white"
+          onclick="downloadInvoice()"
+        >
+          📄 Download Invoice
+        </button>
+      </div>
+
+      <!-- Expense List -->
+      <h2>Expenses</h2>
+      <div id="expenseListContainer"></div>
+
+      <!-- Report Section -->
+      <div id="report" class="report-section"></div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeChangePasswordModal()">&times;</span>
+        <h3>Change Password</h3>
+        <div class="login-form" style="gap: 10px">
+          <div class="password-field">
+            <input
+              type="password"
+              id="currentPassword"
+              placeholder="Current Password"
+            />
+            <span class="eye-icon" onclick="togglePassword('currentPassword')"
+              >👁️</span
+            >
+          </div>
+          <div class="password-field">
+            <input
+              type="password"
+              id="newPassword"
+              placeholder="New Password"
+            />
+            <span class="eye-icon" onclick="togglePassword('newPassword')"
+              >👁️</span
+            >
+          </div>
+          <div class="password-field">
+            <input
+              type="password"
+              id="confirmNewPassword"
+              placeholder="Confirm New Password"
+            />
+            <span
+              class="eye-icon"
+              onclick="togglePassword('confirmNewPassword')"
+              >👁️</span
+            >
+          </div>
+          <button onclick="changePassword()">Update Password</button>
+          <div id="passwordMessage" class="message"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Particle animation for background (green & blue shades)
+      (function () {
+        const canvas = document.getElementById("particle-canvas");
+        const ctx = canvas.getContext("2d");
+        let width, height;
+        let particles = [];
+        const PARTICLE_COUNT = 60;
+
+        function initParticles() {
+          particles = [];
+          for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+              x: Math.random() * width,
+              y: Math.random() * height,
+              vx: (Math.random() - 0.5) * 0.4,
+              vy: (Math.random() - 0.5) * 0.2,
+              radius: Math.random() * 4 + 1,
+              // Store random green/blue bias for each particle
+              green: Math.random() * 100 + 100, // 100-200
+              blue: Math.random() * 100 + 150, // 150-250
+              opacity: Math.random() * 0.4 + 0.2,
+            });
+          }
+        }
+
+        function resizeCanvas() {
+          width = window.innerWidth;
+          height = window.innerHeight;
+          canvas.width = width;
+          canvas.height = height;
+          initParticles();
+        }
+
+        function getParticleColor(particle) {
+          // Use particle's stored green/blue values, vary slightly over time for subtle shimmer
+          const isDark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          let g = particle.green;
+          let b = particle.blue;
+          if (isDark) {
+            // Make particles brighter in dark mode
+            g = Math.min(255, g + 30);
+            b = Math.min(255, b + 30);
+          }
+          return `rgba(0, ${Math.round(g)}, ${Math.round(b)}, ${
+            particle.opacity
+          })`;
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, width, height);
+
+          particles.forEach((p) => {
+            // Move particle
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Wrap around edges
+            if (p.x < 0) p.x = width;
+            if (p.x > width) p.x = 0;
+            if (p.y < 0) p.y = height;
+            if (p.y > height) p.y = 0;
+
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = getParticleColor(p);
+            ctx.fill();
+          });
+
+          requestAnimationFrame(animate);
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+        animate();
+      })();
+
+      // Theme management with green-blue gradients
+      function setThemeGradient(theme) {
+        const body = document.body;
+        if (theme === "dark") {
+          body.style.background = "linear-gradient(135deg, #0a2f2f, #0a1f3a)";
+        } else {
+          body.style.background = "linear-gradient(135deg, #c0e8d5, #b5d8f0)";
+        }
+      }
+
+      function toggleTheme() {
+        let currentTheme = document.documentElement.getAttribute("data-theme");
+        let themeBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          document.documentElement.setAttribute("data-theme", "light");
+          localStorage.setItem("theme", "light");
+          themeBtn.textContent = "🌙";
+          setThemeGradient("light");
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+          themeBtn.textContent = "☾";
+          setThemeGradient("dark");
+        }
+      }
+
+      function loadTheme() {
+        let savedTheme = localStorage.getItem("theme");
+        let themeBtn = document.getElementById("themeToggle");
+
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+          themeBtn.textContent = savedTheme === "dark" ? "☾" : "🌙";
+          setThemeGradient(savedTheme);
+        } else {
+          document.documentElement.setAttribute("data-theme", "light");
+          themeBtn.textContent = "🌙";
+          setThemeGradient("light");
+        }
+      }
+
+      // User management (same as before)
+      let users = {};
+      let currentUser = null;
+
+      function loadUsers() {
+        let saved = localStorage.getItem("expenseUsers");
+        if (saved) {
+          users = JSON.parse(saved);
+        }
+      }
+
+      function saveUsers() {
+        localStorage.setItem("expenseUsers", JSON.stringify(users));
+      }
+
+      function togglePassword(fieldId) {
+        let field = document.getElementById(fieldId);
+        field.type = field.type === "password" ? "text" : "password";
+      }
+
+      function switchTab(tab) {
+        if (tab === "login") {
+          document.getElementById("loginTab").classList.add("active");
+          document.getElementById("registerTab").classList.remove("active");
+          document.getElementById("loginForm").classList.remove("hidden");
+          document.getElementById("registerForm").classList.add("hidden");
+        } else {
+          document.getElementById("registerTab").classList.add("active");
+          document.getElementById("loginTab").classList.remove("active");
+          document.getElementById("registerForm").classList.remove("hidden");
+          document.getElementById("loginForm").classList.add("hidden");
+        }
+        document.getElementById("loginMessage").innerHTML = "";
+        document.getElementById("registerMessage").innerHTML = "";
+      }
+
+      function register() {
+        let username = document.getElementById("regUsername").value.trim();
+        let password = document.getElementById("regPassword").value;
+        let confirmPass = document.getElementById("regConfirmPassword").value;
+        let messageEl = document.getElementById("registerMessage");
+
+        if (!username || !password) {
+          messageEl.innerHTML = "Please fill all fields";
+          return;
+        }
+        if (password !== confirmPass) {
+          messageEl.innerHTML = "Passwords do not match";
+          return;
+        }
+        loadUsers();
+        if (users[username]) {
+          messageEl.innerHTML = "Username already exists";
+          return;
+        }
+        users[username] = {
+          password: password,
+          expenses: {
+            Food: 0,
+            Transport: 0,
+            Rent: 0,
+            Entertainment: 0,
+            Shopping: 0,
+            Education: 0,
+            Misc: 0,
+          },
+          expenseList: [],
+          month: "",
+          income: 0,
+        };
+        saveUsers();
+        messageEl.classList.add("success");
+        messageEl.innerHTML = "Registration successful! Please login.";
+        document.getElementById("regUsername").value = "";
+        document.getElementById("regPassword").value = "";
+        document.getElementById("regConfirmPassword").value = "";
+        setTimeout(() => switchTab("login"), 1000);
+      }
+
+      function login() {
+        let username = document.getElementById("loginUsername").value.trim();
+        let password = document.getElementById("loginPassword").value;
+        let messageEl = document.getElementById("loginMessage");
+        loadUsers();
+        if (!users[username] || users[username].password !== password) {
+          messageEl.innerHTML = "Invalid username or password";
+          return;
+        }
+        currentUser = username;
+        loadUserData();
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("appPage").classList.remove("hidden");
+        document.getElementById("currentUser").innerHTML = `👤 ${username}`;
+        document.getElementById("loginUsername").value = "";
+        document.getElementById("loginPassword").value = "";
+        messageEl.innerHTML = "";
+      }
+
+      function loadUserData() {
+        if (!currentUser) return;
+        let userData = users[currentUser];
+        expenses = { ...userData.expenses };
+        expenseList = [...userData.expenseList];
+        document.getElementById("month").value = userData.month || "";
+        document.getElementById("income").value = userData.income || "";
+        displayExpenseList();
+      }
+
+      function saveUserData() {
+        if (!currentUser) return;
+        users[currentUser] = {
+          password: users[currentUser].password,
+          expenses: expenses,
+          expenseList: expenseList,
+          month: document.getElementById("month").value,
+          income: document.getElementById("income").value,
+        };
+        saveUsers();
+      }
+
+      function logout() {
+        saveUserData();
+        currentUser = null;
+        document.getElementById("loginPage").classList.remove("hidden");
+        document.getElementById("appPage").classList.add("hidden");
+        expenses = {
+          Food: 0,
+          Transport: 0,
+          Rent: 0,
+          Entertainment: 0,
+          Shopping: 0,
+          Education: 0,
+          Misc: 0,
+        };
+        expenseList = [];
+        document.getElementById("report").innerHTML = "";
+      }
+
+      function showChangePasswordModal() {
+        document.getElementById("changePasswordModal").style.display = "block";
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmNewPassword").value = "";
+        document.getElementById("passwordMessage").innerHTML = "";
+      }
+
+      function closeChangePasswordModal() {
+        document.getElementById("changePasswordModal").style.display = "none";
+      }
+
+      function changePassword() {
+        let currentPass = document.getElementById("currentPassword").value;
+        let newPass = document.getElementById("newPassword").value;
+        let confirmNew = document.getElementById("confirmNewPassword").value;
+        let messageEl = document.getElementById("passwordMessage");
+        if (!currentPass || !newPass || !confirmNew) {
+          messageEl.innerHTML = "Please fill all fields";
+          return;
+        }
+        if (users[currentUser].password !== currentPass) {
+          messageEl.innerHTML = "Current password is incorrect";
+          return;
+        }
+        if (newPass !== confirmNew) {
+          messageEl.innerHTML = "New passwords do not match";
+          return;
+        }
+        if (newPass.length < 4) {
+          messageEl.innerHTML = "Password must be at least 4 characters";
+          return;
+        }
+        users[currentUser].password = newPass;
+        saveUsers();
+        messageEl.classList.add("success");
+        messageEl.innerHTML = "Password updated successfully!";
+        setTimeout(closeChangePasswordModal, 1500);
+      }
+
+      // Expense tracker logic
+      let expenses = {
+        Food: 0,
+        Transport: 0,
+        Rent: 0,
+        Entertainment: 0,
+        Shopping: 0,
+        Education: 0,
+        Misc: 0,
+      };
+      let expenseList = [];
+
+      function addExpense() {
+        let date = document.getElementById("expenseDate").value;
+        let category = document.getElementById("category").value;
+        let amount = parseFloat(document.getElementById("amount").value);
+        let month = document.getElementById("month").value;
+        if (!date || !amount || !month || isNaN(amount)) {
+          alert("Please fill all required fields correctly");
+          return;
+        }
+        expenses[category] += amount;
+        expenseList.push({ date, category, amount, month });
+        document.getElementById("expenseDate").value = "";
+        document.getElementById("amount").value = "";
+        saveUserData();
+        displayExpenseList();
+      }
+
+      function displayExpenseList() {
+        let container = document.getElementById("expenseListContainer");
+        if (expenseList.length === 0) {
+          container.innerHTML =
+            "<p style='color: var(--text-color); opacity: 0.6; font-size: 14px;'>No expenses added yet.</p>";
+          return;
+        }
+        let html =
+          '<table class="expense-table"><tr><th>Date</th><th>Category</th><th>Amount</th><th></th></tr>';
+        expenseList.forEach((expense, index) => {
+          html += `<tr>
+            <td>${expense.date}</td>
+            <td>${expense.category}</td>
+            <td>₹${expense.amount.toFixed(2)}</td>
+            <td><button class="delete-btn" onclick="deleteExpense(${index})">✕</button></td>
+          </tr>`;
+        });
+        html += "</table>";
+        container.innerHTML = html;
+      }
+
+      function deleteExpense(index) {
+        let expense = expenseList[index];
+        expenses[expense.category] -= expense.amount;
+        expenseList.splice(index, 1);
+        saveUserData();
+        displayExpenseList();
+      }
+
+      function generateReport() {
+        let month = document.getElementById("month").value.trim();
+        let income = parseFloat(document.getElementById("income").value) || 0;
+        if (!month) {
+          alert("Please enter month (e.g. Feb 2026)");
+          return;
+        }
+        let total = Object.values(expenses).reduce((a, b) => a + b, 0);
+        let balance = income - total;
+        let maxExpense = Math.max(...Object.values(expenses), 1);
+        let chartHTML = '<div class="chart-container">';
+        let categories = Object.keys(expenses);
+        categories.forEach((cat) => {
+          let amount = expenses[cat];
+          let height = (amount / maxExpense) * 180;
+          chartHTML += `
+            <div style="flex:1; text-align:center;">
+                <div class="chart-bar" style="height:${height}px;"></div>
+                <div class="chart-label">${cat}</div>
+            </div>`;
+        });
+        chartHTML += "</div>";
+        let highestCat = categories.reduce((a, b) =>
+          expenses[a] > expenses[b] ? a : b
+        );
+        let catHTML = '<div class="category-list">';
+        categories.forEach(
+          (cat) =>
+            (catHTML += `<div class="category-item"><b>${cat}</b> ₹${expenses[
+              cat
+            ].toFixed(2)}</div>`)
+        );
+        catHTML += "</div>";
+        document.getElementById("report").innerHTML = `
+        <h2>${month} Report</h2>
+        <div class="stats-row">
+            <div class="stat">Income<br><span class="value">₹${income.toFixed(
+              2
+            )}</span></div>
+            <div class="stat">Expenses<br><span class="value">₹${total.toFixed(
+              2
+            )}</span></div>
+            <div class="stat">Balance<br><span class="value ${
+              balance < 0 ? "negative" : "positive"
+            }">₹${balance.toFixed(2)}</span></div>
+        </div>
+        <h3>Spending by Category</h3>
+        ${chartHTML}
+        ${catHTML}
+        <h3>Highest Spending</h3>
+        <p><b>${highestCat}</b>: ₹${expenses[highestCat].toFixed(2)}</p>
+        <div class="alert ${
+          balance < 0 ? "warning" : balance > income * 0.2 ? "success" : ""
+        }">
+            ${
+              balance < 0
+                ? "⚠️ Overspent by ₹" + Math.abs(balance).toFixed(2)
+                : balance > income * 0.2
+                ? "✅ Saving " +
+                  ((balance / income) * 100).toFixed(1) +
+                  "% of income"
+                : "💡 Try to save at least 10–20% of income next month"
+            }
+        </div>`;
+        saveUserData();
+      }
+
+      function showSuggestions() {
+        const reportDiv = document.getElementById("report");
+        const month = document.getElementById("month").value.trim();
+        const income = parseFloat(document.getElementById("income").value) || 0;
+        const totalExpenses = Object.values(expenses).reduce(
+          (a, b) => a + b,
+          0
+        );
+        if (!month) {
+          alert("Please enter the month first.");
+          return;
+        }
+        if (totalExpenses === 0) {
+          reportDiv.insertAdjacentHTML(
+            "beforeend",
+            `<div class="alert success" style="margin-top:20px;border-left-color:#6c5ce7;">No expenses this month — you're already ahead!<br>Keep tracking consistently — awareness is the best first step.</div>`
+          );
+          reportDiv.scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+        const sorted = Object.entries(expenses)
+          .filter(([_, amt]) => amt > 0)
+          .sort((a, b) => b[1] - a[1]);
+        let advice = [];
+        let potentialSavings = 0;
+        sorted.slice(0, 3).forEach(([cat, amount]) => {
+          let tip = "";
+          const percentOfIncome = income > 0 ? (amount / income) * 100 : 0;
+          switch (cat) {
+            case "Food":
+              tip =
+                "Cook more at home, plan weekly meals, reduce food delivery & eating out.";
+              potentialSavings += Math.round(amount * 0.35);
+              break;
+            case "Transport":
+              tip =
+                "Use public transport, walk/cycle for short trips, share rides when possible.";
+              potentialSavings += Math.round(amount * 0.45);
+              break;
+            case "Rent":
+              tip =
+                "Look for cheaper shared accommodation or negotiate rent for next term.";
+              potentialSavings += Math.round(amount * 0.1);
+              break;
+            case "Entertainment":
+              tip =
+                "Switch to free options — college events, YouTube, library, friends hangouts.";
+              potentialSavings += Math.round(amount * 0.6);
+              break;
+            case "Shopping":
+              tip =
+                "Follow 48-hour wait rule for non-essentials. Avoid impulse buys & sales traps.";
+              potentialSavings += Math.round(amount * 0.5);
+              break;
+            case "Education":
+              tip =
+                "Use free online resources, second-hand books, share notes & PDFs.";
+              potentialSavings += Math.round(amount * 0.3);
+              break;
+            case "Misc":
+              tip =
+                "Track small daily spends carefully — coffee, snacks, subscriptions add up fast.";
+              potentialSavings += Math.round(amount * 0.4);
+              break;
+            default:
+              tip =
+                "Review whether all items here are truly necessary this month.";
+              potentialSavings += Math.round(amount * 0.35);
+          }
+          let extra = percentOfIncome > 15 ? " — high % of income" : "";
+          advice.push(
+            `<li><b>${cat}</b> (₹${amount.toFixed(2)}${extra})<br>${tip}</li>`
+          );
+        });
+        let suggestionHTML = `
+        <div class="alert" style="margin-top:25px;border-left-color:#6c5ce7;background:var(--alert-bg);">
+            <h3 style="margin:0 0 12px 0;color:#6c5ce7;">AI Saving Suggestions for Next Month</h3>
+            <p style="margin:0 0 12px 0;">Focus on your top spending categories — small changes here give the biggest impact:</p>
+            <ul style="margin:8px 0 16px 20px;padding-left:0;list-style:none;">${advice.join(
+              ""
+            )}</ul>
+            <p style="font-weight:600;margin:16px 0 8px 0;">Realistic potential: ₹${potentialSavings.toLocaleString()} – ₹${Math.round(
+          potentialSavings * 1.6
+        ).toLocaleString()} extra savings next month</p>
+            <p style="font-size:13px;color:var(--text-color);opacity:0.8;margin-top:16px;">Start with just 1–2 of these tips — consistency beats perfection. Generate report again next month to track improvement!</p>
+        </div>`;
+        reportDiv.insertAdjacentHTML("beforeend", suggestionHTML);
+        reportDiv.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function downloadInvoice() {
+        const month = document.getElementById("month").value.trim();
+        const income = parseFloat(document.getElementById("income").value) || 0;
+        const total = Object.values(expenses).reduce((a, b) => a + b, 0);
+        const balance = income - total;
+        const date = new Date().toLocaleDateString();
+        if (!month || expenseList.length === 0) {
+          alert("Please add expenses and set month before downloading invoice");
+          return;
+        }
+        let invoiceHTML = `
+        <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:30px;background:white;color:#333;">
+            <div style="background:#333;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0;"><h1 style="margin:0;">Expense Invoice</h1><p style="margin:5px 0 0;opacity:0.9;">${month}</p></div>
+            <div style="padding:30px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:30px;"><div><p><strong>Student:</strong> ${currentUser}</p><p><strong>Generated:</strong> ${date}</p></div><div style="text-align:right;"><p><strong>Invoice #:</strong> INV-${Date.now()
+          .toString()
+          .slice(-8)}</p></div></div>
+                <table style="width:100%;border-collapse:collapse;margin:20px 0;"><thead><tr style="background:#f5f5f5;"><th style="padding:12px;text-align:left;border-bottom:2px solid #333;">Date</th><th style="padding:12px;text-align:left;border-bottom:2px solid #333;">Category</th><th style="padding:12px;text-align:right;border-bottom:2px solid #333;">Amount (₹)</th></tr></thead><tbody>`;
+        expenseList.forEach((exp) => {
+          invoiceHTML += `<tr><td style="padding:10px;border-bottom:1px solid #ddd;">${
+            exp.date
+          }</td><td style="padding:10px;border-bottom:1px solid #ddd;">${
+            exp.category
+          }</td><td style="padding:10px;text-align:right;border-bottom:1px solid #ddd;">₹${exp.amount.toFixed(
+            2
+          )}</td></tr>`;
+        });
+        invoiceHTML += `</tbody></table><div style="margin-top:30px;padding-top:20px;border-top:2px solid #333;"><div style="display:flex;justify-content:flex-end;"><div style="width:300px;"><div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Total Income:</span><span><strong>₹${income.toFixed(
+          2
+        )}</strong></span></div><div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Total Expenses:</span><span><strong>₹${total.toFixed(
+          2
+        )}</strong></span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #ddd;font-size:18px;"><span>Balance:</span><span style="color:${
+          balance < 0 ? "#c00" : "#2a7"
+        };"><strong>₹${balance.toFixed(
+          2
+        )}</strong></span></div></div></div></div><div style="margin-top:40px;text-align:center;color:#666;font-size:12px;"><p>Thank you for using Student Expense Tracker</p><p>Keep tracking your expenses to achieve your financial goals!</p></div></div></div>`;
+        const blob = new Blob([invoiceHTML], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Invoice_${month.replace(/\s/g, "_")}_${currentUser}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function resetData() {
+        if (confirm("Reset all current month data?")) {
+          expenses = {
+            Food: 0,
+            Transport: 0,
+            Rent: 0,
+            Entertainment: 0,
+            Shopping: 0,
+            Education: 0,
+            Misc: 0,
+          };
+          expenseList = [];
+          document.getElementById("month").value = "";
+          document.getElementById("income").value = "";
+          document.getElementById("expenseDate").value = "";
+          document.getElementById("amount").value = "";
+          document.getElementById("report").innerHTML = "";
+          displayExpenseList();
+          saveUserData();
+        }
+      }
+
+      // Initialize
+      window.onload = function () {
+        loadTheme();
+        loadUsers();
+        document.getElementById("loginPage").classList.remove("hidden");
+        document.getElementById("appPage").classList.add("hidden");
+      };
+
+      window.onclick = function (event) {
+        let modal = document.getElementById("changePasswordModal");
+        if (event.target == modal) modal.style.display = "none";
+      };
+    </script>
+  </body>
+</html>
